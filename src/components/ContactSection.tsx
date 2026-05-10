@@ -37,7 +37,7 @@ export default function ContactSection() {
           className="flex flex-col sm:flex-row items-center justify-center gap-4"
         >
           <a
-            href="https://t.me/"
+            href="https://t.me/UXUI00X"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 backdrop-blur-md bg-white/15 border border-white/30 text-white rounded-full px-8 py-3.5 text-sm font-medium hover:bg-white/25 transition-all duration-300 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)] active:scale-[0.97]"
@@ -46,7 +46,7 @@ export default function ContactSection() {
             Write to Me
           </a>
           <a
-            href="mailto:hello@example.com"
+            href="mailto:nikasq2005@gmail.com"
             className="inline-flex items-center gap-2 backdrop-blur-md bg-white/5 border border-white/20 text-white/80 rounded-full px-8 py-3.5 text-sm font-medium hover:bg-white/15 hover:border-white/30 transition-all duration-300 active:scale-[0.97]"
           >
             <Mail size={16} />

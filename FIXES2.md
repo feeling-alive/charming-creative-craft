@@ -1,3 +1,13 @@
+# FIXES 2 — 3 точных исправления
+
+---
+
+## FIX 1 — ProjectsSection.tsx — ПОЛНАЯ ЗАМЕНА ФАЙЛА
+
+Замени ВЕСЬ файл `src/components/ProjectsSection.tsx` на код ниже.
+Это оригинальный grid из первого коммита + добавлена модалка по клику.
+
+```tsx
 import { motion, useInView, AnimatePresence } from "framer-motion"
 import { useRef, useState, useEffect } from "react"
 import React from "react"
@@ -193,94 +203,11 @@ function ProjectModal({ project, onClose }: { project: typeof projects[0]; onClo
   )
 }
 
-function AllProjectsModal({ onClose, onSelect }: {
-  onClose: () => void
-  onSelect: (project: typeof projects[0]) => void
-}) {
-  useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose() }
-    document.addEventListener("keydown", handleKey)
-    document.body.style.overflow = "hidden"
-    return () => {
-      document.removeEventListener("keydown", handleKey)
-      document.body.style.overflow = ""
-    }
-  }, [onClose])
-
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      onClick={onClose}
-      style={{
-        position: "fixed", inset: 0, zIndex: 9998,
-        background: "rgba(0,0,0,0.85)",
-        backdropFilter: "blur(8px)",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        padding: 24
-      }}
-    >
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        onClick={e => e.stopPropagation()}
-        style={{
-          background: "#111",
-          border: "1px solid rgba(255,255,255,0.1)",
-          borderRadius: 16,
-          width: "100%", maxWidth: 700,
-          maxHeight: "80vh",
-          overflow: "auto",
-          padding: 32
-        }}
-      >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-          <h2 style={{ color: "white", fontSize: 22, fontWeight: 600, margin: 0 }}>All Projects</h2>
-          <button onClick={onClose} style={{ background: "rgba(255,255,255,0.1)", border: "none", color: "white", width: 36, height: 36, borderRadius: "50%", cursor: "pointer", fontSize: 18 }}>×</button>
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          {projects.map(p => (
-            <div
-              key={p.id}
-              onClick={() => { onClose(); onSelect(p) }}
-              style={{
-                display: "flex", alignItems: "center", gap: 16,
-                padding: "12px 16px",
-                borderRadius: 10,
-                border: "1px solid rgba(255,255,255,0.08)",
-                cursor: "pointer",
-                transition: "background 0.2s"
-              }}
-              onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.06)")}
-              onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
-            >
-              <img src={p.img} alt={p.title} style={{ width: 56, height: 56, borderRadius: 8, objectFit: "cover", filter: "grayscale(1)" }} />
-              <div>
-                <div style={{ color: "white", fontWeight: 600, marginBottom: 4 }}>{p.title}</div>
-                <div style={{ display: "flex", gap: 6 }}>
-                  {p.tags.slice(0, 2).map(tag => (
-                    <span key={tag} style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", background: "rgba(255,255,255,0.06)", padding: "2px 8px", borderRadius: 999 }}>{tag}</span>
-                  ))}
-                </div>
-              </div>
-              <span style={{ marginLeft: "auto", color: "rgba(255,255,255,0.3)", fontSize: 18 }}>→</span>
-            </div>
-          ))}
-        </div>
-      </motion.div>
-    </motion.div>
-  )
-}
-
 function ProjectsSection() {
   const ref = useRef(null)
   const isVisible = useInView(ref, { once: true, margin: "-80px" })
   const [closestIndex, setClosestIndex] = useState<number | null>(null)
   const [selectedProject, setSelectedProject] = useState<typeof projects[0] | null>(null)
-  const [cols, setCols] = useState(3)
-  const [visibleCount, setVisibleCount] = useState(9)
-  const [showAllProjects, setShowAllProjects] = useState(false)
   const cardsRef = useRef<(HTMLDivElement | null)[]>([])
 
   useEffect(() => {
@@ -301,29 +228,19 @@ function ProjectsSection() {
       setClosestIndex(closestIdx)
     }
     updateClosest()
-    const update = () => {
-      const w = window.innerWidth
-      if (w < 768) { setCols(1); setVisibleCount(3) }
-      else if (w < 1200) { setCols(2); setVisibleCount(6) }
-      else { setCols(3); setVisibleCount(9) }
-    }
-    update()
     window.addEventListener("scroll", updateClosest, true)
     window.addEventListener("resize", updateClosest)
-    window.addEventListener("resize", update)
     window.addEventListener("mousemove", updateClosest)
     return () => {
       window.removeEventListener("scroll", updateClosest, true)
       window.removeEventListener("resize", updateClosest)
-      window.removeEventListener("resize", update)
       window.removeEventListener("mousemove", updateClosest)
     }
   }, [])
 
   const getCardHeight = (index: number) => {
-    if (cols === 1) return "220px"
-    if (cols === 2) return "300px"
-    return closestIndex === index ? "480px" : "450px"
+    if (typeof window !== "undefined" && window.innerWidth < 1200) return "350px"
+    return closestIndex === index ? "550px" : "450px"
   }
 
   const cardStyle = (index: number, marginBottom?: number): React.CSSProperties => ({
@@ -338,13 +255,11 @@ function ProjectsSection() {
   })
 
   const imgStyle: React.CSSProperties = {
-    width: "100%",
-    height: "100%",
-    objectFit: "cover",
+    width: "100%", height: "100%", objectFit: "cover",
     objectPosition: "center center",
-    position: "absolute",
-    top: 0,
-    left: 0,
+    position: "absolute", top: 0, left: 0,
+    filter: "grayscale(1) brightness(0.85)",
+    transition: "filter 0.45s ease",
     display: "block"
   }
 
@@ -353,18 +268,17 @@ function ProjectsSection() {
       ref={(el) => (cardsRef.current[cardIndex] = el)}
       initial={{ opacity: 0, y: 30 }}
       animate={isVisible ? { opacity: 1, y: 0, height: getCardHeight(cardIndex) } : {}}
-      transition={{ duration: 0.6, delay: cardIndex * 0.07, height: { duration: 0.45, ease: "easeInOut" }, scale: { duration: 0.3, ease: "easeOut" } }}
-      whileHover={{ scale: 1.02 }}
+      transition={{ duration: 0.6, delay: cardIndex * 0.07, height: { duration: 0.45, ease: "easeInOut" } }}
       style={cardStyle(cardIndex, mb)}
       className="group"
-      onClick={() => { setShowAllProjects(false); setSelectedProject(projects[projectIndex]) }}
+      onClick={() => setSelectedProject(projects[projectIndex])}
     >
       <div style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}>
         <img
           src={projects[projectIndex].img}
           alt={projects[projectIndex].title}
           style={imgStyle}
-          className="grayscale brightness-75 group-hover:grayscale-0 group-hover:brightness-100 transition-all duration-500"
+          className="group-hover:brightness-100 group-hover:grayscale-0"
           loading="lazy"
           decoding="async"
         />
@@ -395,61 +309,27 @@ function ProjectsSection() {
           >What I build</motion.h2>
         </div>
 
-        {/* Bento Grid — responsive */}
-        {cols === 1 ? (
-          <div style={{ display: "flex", flexDirection: "column", gap: 8, width: "100%", marginBottom: "4rem" }}>
-            {projects.slice(0, visibleCount).map((project) => (
-              <div
-                key={project.id}
-                style={{ height: "220px", borderRadius: 8, overflow: "hidden", position: "relative", cursor: "pointer" }}
-                onClick={() => { setShowAllProjects(false); setSelectedProject(project) }}
-                className="group"
-              >
-                <img src={project.img} alt={project.title} style={imgStyle} className="group-hover:brightness-100 group-hover:grayscale-0" loading="lazy" />
-                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <button className="px-4 py-2 bg-white/20 backdrop-blur-sm text-white text-xs tracking-widest uppercase rounded-full border border-white/30">View Project ↗</button>
-                </div>
-              </div>
-            ))}
+        {/* Bento Grid — ORIGINAL LAYOUT */}
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", maxWidth: 1400, margin: "0 auto 4rem", width: "100%" }}>
+          {/* Left column */}
+          <div style={{ display: "flex", flexDirection: "column", flex: 1.2, justifyContent: "center" }}>
+            {makeCard(0, 0, 8)}
+            {makeCard(1, 1, 8)}
+            {makeCard(2, 2)}
           </div>
-        ) : cols === 2 ? (
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, width: "100%", marginBottom: "4rem" }}>
-            {projects.slice(0, visibleCount).map((project) => (
-              <div
-                key={project.id}
-                style={{ height: "300px", borderRadius: 8, overflow: "hidden", position: "relative", cursor: "pointer" }}
-                onClick={() => { setShowAllProjects(false); setSelectedProject(project) }}
-                className="group"
-              >
-                <img src={project.img} alt={project.title} style={imgStyle} className="group-hover:brightness-100 group-hover:grayscale-0" loading="lazy" />
-                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <button className="px-4 py-2 bg-white/20 backdrop-blur-sm text-white text-xs tracking-widest uppercase rounded-full border border-white/30">View Project ↗</button>
-                </div>
-              </div>
-            ))}
+          {/* Center column */}
+          <div style={{ display: "flex", flexDirection: "column", flex: 1.8, gap: 8, margin: "0 8px" }}>
+            {makeCard(3, 3)}
+            {makeCard(4, 4)}
+            {makeCard(5, 5)}
           </div>
-        ) : (
-          <div style={{ display: "flex", justifyContent: "center", alignItems: "center", maxWidth: 1400, margin: "0 auto 4rem", width: "100%" }}>
-            {/* Left column */}
-            <div style={{ display: "flex", flexDirection: "column", flex: 1.2, justifyContent: "center" }}>
-              {makeCard(0, 0, 8)}
-              {makeCard(1, 1, 8)}
-              {makeCard(2, 2)}
-            </div>
-            {/* Center column */}
-            <div style={{ display: "flex", flexDirection: "column", flex: 1.8, gap: 8, margin: "0 8px" }}>
-              {makeCard(3, 3)}
-              {makeCard(4, 4)}
-              {makeCard(5, 5)}
-            </div>
-            {/* Right column */}
-            <div style={{ display: "flex", flexDirection: "column", flex: 1.2, justifyContent: "center" }}>
-              {makeCard(6, 6, 8)}
-              {makeCard(7, 7, 8)}
-              {makeCard(8, 8)}
-            </div>
+          {/* Right column */}
+          <div style={{ display: "flex", flexDirection: "column", flex: 1.2, justifyContent: "center" }}>
+            {makeCard(6, 6, 8)}
+            {makeCard(7, 7, 8)}
+            {makeCard(8, 8)}
           </div>
-        )}
+        </div>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -457,12 +337,9 @@ function ProjectsSection() {
           transition={{ duration: 0.6, delay: 0.6 }}
           className="flex items-center justify-center gap-4"
         >
-          <button
-            onClick={() => setShowAllProjects(true)}
-            className="backdrop-blur-md bg-white/15 border border-white/30 text-white rounded-full px-7 py-3 text-sm font-medium hover:bg-white/25 transition-all duration-300"
-          >
+          <a href="#projects" className="backdrop-blur-md bg-white/15 border border-white/30 text-white rounded-full px-7 py-3 text-sm font-medium hover:bg-white/25 transition-all duration-300">
             All Projects
-          </button>
+          </a>
           <a href="#contact" className="backdrop-blur-md bg-white/5 border border-white/20 text-white/80 rounded-full px-7 py-3 text-sm font-medium hover:bg-white/15 hover:border-white/30 transition-all duration-300">
             Get in Touch
           </a>
@@ -473,14 +350,70 @@ function ProjectsSection() {
       {selectedProject && (
         <ProjectModal project={selectedProject} onClose={() => setSelectedProject(null)} />
       )}
-      {showAllProjects && (
-        <AllProjectsModal
-          onClose={() => setShowAllProjects(false)}
-          onSelect={(p) => setSelectedProject(p)}
-        />
-      )}
     </section>
   )
 }
 
 export default React.memo(ProjectsSection)
+```
+
+---
+
+## FIX 2 — ProcessSection.tsx — Sliding window 4 шага
+
+Верни оригинальную структуру carousel (фото слева, шаги справа, стрелки + dots).
+НО добавь sliding window: показывать только 4 шага одновременно в окне.
+
+Когда active переходит за пределы видимого окна — список плавно сдвигается:
+- Используй `windowStart` state (начальный индекс видимого окна)
+- При переходе на step 5 (index 4): windowStart становится 1, первый шаг уезжает вверх
+- При переходе на step 6 (index 5): windowStart становится 2
+
+Анимация сдвига: `motion.div` со списком шагов, при изменении `windowStart` применяй `animate={{ y: windowStart * -itemHeight }}` с `transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}`.
+
+Высота одного шага (itemHeight): ~120px — замерь и используй это значение.
+
+Данные steps — оставь 6 шагов из текущего файла (они уже правильные).
+
+---
+
+## FIX 3 — FAQSection.tsx — Lottie из Coding.json
+
+ВАЖНО: файл `src/assets/Coding.json` существует (подтверждено пользователем).
+
+Шаг 1 — установить пакет:
+```bash
+npm install lottie-react
+```
+
+Шаг 2 — в FAQSection.tsx добавить импорты вверху файла:
+```tsx
+import Lottie from "lottie-react"
+import codingAnimation from "@/assets/Coding.json"
+```
+
+Шаг 3 — найти в JSX место где сейчас стоит любое изображение или SVG-иллюстрация слева.
+Заменить его ПОЛНОСТЬЮ на:
+```tsx
+<div style={{ width: "100%", height: "100%", minHeight: 300, borderRadius: 12, overflow: "hidden" }}>
+  <Lottie
+    animationData={codingAnimation}
+    loop={true}
+    style={{ width: "100%", height: "100%" }}
+  />
+</div>
+```
+
+Шаг 4 — если TypeScript ругается на импорт JSON, добавить в `tsconfig.json` в compilerOptions:
+```json
+"resolveJsonModule": true
+```
+
+---
+
+## После всех правок
+
+```bash
+npm run build
+```
+Должно быть 0 ошибок и 0 type errors.

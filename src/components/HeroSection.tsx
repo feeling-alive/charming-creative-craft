@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Mouse } from "lucide-react";
 import React, { Suspense, useState, useEffect } from "react";
 import ShaderBackground from "@/components/ShaderBackground";
@@ -7,6 +7,7 @@ const ease = [0.16, 1, 0.3, 1] as const;
 
 const HeroSection = () => {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [overlayVisible, setOverlayVisible] = useState(true);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -16,6 +17,11 @@ const HeroSection = () => {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
+  useEffect(() => {
+    const t = setTimeout(() => setOverlayVisible(false), 750);
+    return () => clearTimeout(t);
+  }, []);
+
   return (
     <motion.section
       initial={{ opacity: 0 }}
@@ -23,6 +29,24 @@ const HeroSection = () => {
       transition={{ duration: 1.2, ease: "easeOut" }}
       className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden"
     >
+
+      <AnimatePresence>
+        {overlayVisible && (
+          <motion.div
+            key="overlay"
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.5, ease: "easeInOut" }}
+            style={{
+              position: "absolute",
+              inset: 0,
+              background: "#000",
+              zIndex: 40,
+              pointerEvents: "none"
+            }}
+          />
+        )}
+      </AnimatePresence>
 
       {/* ShaderGradient background */}
       <div className="absolute inset-0 bg-black" style={{ willChange: "transform" }}>

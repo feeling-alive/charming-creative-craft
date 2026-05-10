@@ -1,7 +1,25 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { ChevronDown } from "lucide-react";
+
+const lines = [
+  { indent:0, tokens:[{t:"import ",c:"#ff7b72"},{t:"React",c:"#79c0ff"},{t:", { useState, useEffect }",c:"#e6edf3"},{t:" from ",c:"#ff7b72"},{t:'"react"',c:"#a5d6ff"}] },
+  { indent:0, tokens:[{t:"import ",c:"#ff7b72"},{t:"{ motion }",c:"#79c0ff"},{t:" from ",c:"#ff7b72"},{t:'"framer-motion"',c:"#a5d6ff"}] },
+  { indent:0, tokens:[{t:"import ",c:"#ff7b72"},{t:"ShaderBg",c:"#79c0ff"},{t:" from ",c:"#ff7b72"},{t:'"./ShaderBg"',c:"#a5d6ff"}] },
+  { indent:0, tokens:[{t:"",c:"#e6edf3"}] },
+  { indent:0, tokens:[{t:"const ",c:"#ff7b72"},{t:"Hero",c:"#79c0ff"},{t:" = () => {",c:"#e6edf3"}] },
+  { indent:1, tokens:[{t:"return ",c:"#ff7b72"},{t:"(",c:"#e6edf3"}] },
+  { indent:2, tokens:[{t:"<",c:"#7ee787"},{t:"section ",c:"#7ee787"},{t:"className",c:"#79c0ff"},{t:'="hero"',c:"#a5d6ff"},{t:">",c:"#7ee787"}] },
+  { indent:3, tokens:[{t:"<",c:"#7ee787"},{t:"ShaderBg ",c:"#7ee787"},{t:"/>",c:"#7ee787"}] },
+  { indent:3, tokens:[{t:"<",c:"#7ee787"},{t:"motion.h1",c:"#7ee787"},{t:">",c:"#7ee787"}] },
+  { indent:4, tokens:[{t:"Web Development",c:"#a5d6ff"}] },
+  { indent:3, tokens:[{t:"</",c:"#7ee787"},{t:"motion.h1",c:"#7ee787"},{t:">",c:"#7ee787"}] },
+  { indent:2, tokens:[{t:"</",c:"#7ee787"},{t:"section",c:"#7ee787"},{t:">",c:"#7ee787"}] },
+  { indent:0, tokens:[{t:"}",c:"#e6edf3"}] },
+];
+
+type Phase = 'typing' | 'pause' | 'erasing';
 
 const faqs = [
   { q: "What services do you provide?", a: "I specialize in web development, UI/UX design, frontend engineering with React/Next.js, and automation tools to create premium digital experiences." },
@@ -22,6 +40,38 @@ const ease = [0.16, 1, 0.3, 1] as const;
 export default function FAQSection() {
   const { ref, isVisible } = useScrollReveal(0.1);
   const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const [charIndex, setCharIndex] = useState(0);
+  const [phase, setPhase] = useState<Phase>('typing');
+
+  const allChars = lines.flatMap((line, li) => [
+    ...Array(line.indent * 2).fill({ char: ' ', color: '#e6edf3', lineIndex: li, type: 'space' }),
+    ...line.tokens.flatMap(tok =>
+      tok.t.split('').map(char => ({ char, color: tok.c, lineIndex: li, type: 'char' }))
+    ),
+    { char: '\n', color: '', lineIndex: li, type: 'newline' }
+  ]);
+
+  useEffect(() => {
+    let t: ReturnType<typeof setTimeout>;
+    if (phase === 'typing') {
+      if (charIndex < allChars.length) {
+        t = setTimeout(() => setCharIndex(i => i + 1), 45);
+      } else {
+        t = setTimeout(() => setPhase('pause'), 2500);
+      }
+    }
+    if (phase === 'pause') {
+      t = setTimeout(() => setPhase('erasing'), 800);
+    }
+    if (phase === 'erasing') {
+      if (charIndex > 0) {
+        t = setTimeout(() => setCharIndex(i => i - 1), 18);
+      } else {
+        t = setTimeout(() => setPhase('typing'), 500);
+      }
+    }
+    return () => clearTimeout(t);
+  }, [charIndex, phase, allChars.length]);
 
   return (
     <section className="section-padding-lg" ref={ref}>
@@ -47,13 +97,57 @@ export default function FAQSection() {
               initial={{ opacity: 0, y: 16 }}
               animate={isVisible ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.7, delay: 0.15, ease }}
-              className="glass-card p-1 rounded-2xl overflow-hidden mb-6"
+              className="mb-6"
             >
-              <img
-                src="https://framerusercontent.com/images/QqqmFNIdzb0HbOiMSHvqZXkwT7w.png?width=1200&height=1200"
-                alt="Design"
-                className="w-full aspect-square object-cover rounded-xl"
-              />
+              <div style={{
+                background: "#111111",
+                borderRadius: 12,
+                padding: "20px 24px",
+                fontFamily: "'JetBrains Mono', 'Fira Code', 'Courier New', monospace",
+                fontSize: 13,
+                lineHeight: 1.7,
+                minHeight: 420,
+                width: "100%",
+                maxWidth: "100%",
+                border: "1px solid rgba(255,255,255,0.10)",
+                overflow: "hidden",
+                marginLeft: 0,
+                marginRight: "auto"
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16, paddingBottom: 12, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                  <span style={{ width: 12, height: 12, borderRadius: "50%", background: "#ff5f57", display: "inline-block" }} />
+                  <span style={{ width: 12, height: 12, borderRadius: "50%", background: "#febc2e", display: "inline-block" }} />
+                  <span style={{ width: 12, height: 12, borderRadius: "50%", background: "#28c840", display: "inline-block" }} />
+                  <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 12, marginLeft: 8 }}>portfolio.tsx</span>
+                </div>
+                <pre style={{ margin: 0, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+                  {(() => {
+                    const visible = allChars.slice(0, charIndex)
+                    const lineGroups: { char: string; color: string }[][] = [[]]
+                    visible.forEach(c => {
+                      if (c.type === 'newline') lineGroups.push([])
+                      else lineGroups[lineGroups.length - 1].push(c as { char: string; color: string })
+                    })
+                    return lineGroups.map((line, li) => (
+                      <div key={li}>
+                        {line.map((c, ci) => (
+                          <span key={ci} style={{ color: c.color }}>{c.char}</span>
+                        ))}
+                        {li === lineGroups.length - 1 && (
+                          <span style={{
+                            display: "inline-block",
+                            width: 2, height: "1em",
+                            background: "#79c0ff",
+                            verticalAlign: "text-bottom",
+                            animation: "blink 1s step-end infinite"
+                          }} />
+                        )}
+                      </div>
+                    ))
+                  })()}
+                </pre>
+                <style>{`@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }`}</style>
+              </div>
             </motion.div>
 
             <motion.div

@@ -18,7 +18,7 @@ export default function TestimonialsSection() {
   const [expanded, setExpanded] = useState<number | null>(null)
 
   return (
-    <section className="section-padding-lg" style={{ background: "hsl(var(--background))", overflow: "hidden" }} ref={ref}>
+    <section id="reviews" className="section-padding-lg" style={{ background: "hsl(var(--background))", overflow: "hidden" }} ref={ref}>
       <div className="section-container" style={{ width: "100%", overflow: "hidden" }}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
